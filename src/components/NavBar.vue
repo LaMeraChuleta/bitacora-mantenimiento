@@ -1,6 +1,7 @@
 <template>
        <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
+        <v-btn outlined @click="home">
         <v-img
           alt="Vuetify Logo"
           class="shrink mr-2"
@@ -11,7 +12,10 @@
         />
 
         Prosis
+        </v-btn>
       </div>
+      
+      
 
       <v-spacer></v-spacer>
 
@@ -32,6 +36,9 @@ export default {
 
         salir(){
             this.$router.push('/login')
+        },
+        home(){
+          this.$router.push('/')
         }
     }
 }
