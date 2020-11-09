@@ -35,10 +35,10 @@ export default {
     methods:{
 
         salir(){
-            this.$router.push('/login')
+            this.$router.push('/')
         },
         home(){
-          this.$router.push('/')
+          this.$router.push('/home')
         }
     }
 }

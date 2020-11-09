@@ -197,6 +197,9 @@ export default {
     <v-sheet class="mt-10">
       <v-textarea outlined label="Observaciones"></v-textarea>
     </v-sheet>
+       <v-sheet class="mt-2">
+      <v-btn outlined color="primary">Imprimir Reporte</v-btn>
+    </v-sheet>
     <!-- ////////////////////////////////////////////////////////////
     //                   Modal de Actividades                    ///
     //////////////////////////////////////////////////////////////// -->
@@ -234,7 +237,7 @@ export default {
                 </v-col>
               </v-row>
             </v-container>
-            <small>*indicates required field</small>
+            
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
