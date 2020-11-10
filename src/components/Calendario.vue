@@ -121,15 +121,15 @@ export default {
               </div>
               <div class="ml-16">
                 <p class="d-inline blue--text">° Azul -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Trimestral</p>
               </div>
               <div class="ml-16">
                 <p class="d-inline pink--text">° Rosa -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Semestral</p>
               </div>
               <div class="ml-16">
                 <p class="d-inline orange--text">° Naranja -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Anual</p>
               </div>
             </v-col>
           </v-row>
