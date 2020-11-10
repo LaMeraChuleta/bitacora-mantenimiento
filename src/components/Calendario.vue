@@ -106,7 +106,7 @@ export default {
                 Correspondiente al mes de: {{ "Noviembre 2020" }}
               </h3>
               <h3 class="font-weight-regular ma-3">
-                Plaza de Cobro: {{ "Noviembre 2020" }}
+                Plaza de Cobro: {{ "001 Tlalpan" }}
               </h3>
             </v-col>
             <v-col cols="6" class="text-center">
@@ -121,15 +121,15 @@ export default {
               </div>
               <div class="ml-16">
                 <p class="d-inline blue--text">° Azul -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Trimestral</p>
               </div>
               <div class="ml-16">
                 <p class="d-inline pink--text">° Rosa -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Semestral</p>
               </div>
               <div class="ml-16">
                 <p class="d-inline orange--text">° Naranja -</p>
-                <p class="d-inline">Mensual</p>
+                <p class="d-inline">Anual</p>
               </div>
             </v-col>
           </v-row>

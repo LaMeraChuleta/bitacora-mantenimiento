@@ -11,6 +11,11 @@ const routes = [
     component: Home
   },
   {
+    path: '/preventivo',
+    name: 'Preventivo',
+    component: () => import('../views/Preventivo.vue')
+  },
+  {
     path: '/',
     name: 'Login',
     component: () => import('../views/Login.vue')
