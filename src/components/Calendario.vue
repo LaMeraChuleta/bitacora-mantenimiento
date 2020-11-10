@@ -106,7 +106,7 @@ export default {
                 Correspondiente al mes de: {{ "Noviembre 2020" }}
               </h3>
               <h3 class="font-weight-regular ma-3">
-                Plaza de Cobro: {{ "Noviembre 2020" }}
+                Plaza de Cobro: {{ "001 Tlalpan" }}
               </h3>
             </v-col>
             <v-col cols="6" class="text-center">
