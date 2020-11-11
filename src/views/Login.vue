@@ -69,7 +69,7 @@ export default {
         .then((response) => {
           console.log(response);
           if (response.status === 200) {
-            this.$store.commit("Login/USER_MUTATION", response.data.result);
+            this.$store.commit("Login/USER_MUTATION", response.data.result);            
             this.$router.push("/home");
           }
         })
