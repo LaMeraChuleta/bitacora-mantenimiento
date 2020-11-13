@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-
 import Home from '../views/Home.vue'
 
 Vue.use(VueRouter)
@@ -12,19 +11,24 @@ const routes = [
     component: Home
   },
   {
-    path: '/preventivo',
-    name: 'Preventivo',
-    component: () => import('../views/Preventivo.vue')
-  },
-  {
     path: '/',
     name: 'Login',
     component: () => import('../views/Login.vue')
   },
   {
-    path: '/seguimientopreventivo',
-    name: 'SeguimientoPreventivo',
-    component: () => import('../views/SeguimientoPreventivo.vue')
+    path: '/preventivo',
+    name: 'Preventivo',
+    component: () => import('../views/Preventivo.vue')
+  },
+  {
+    path: '/reporteservicio',
+    name: 'ReporteServicio',
+    component: () => import('../views/ReporteServicio.vue')
+  },
+  {
+    path: '/bitacorapreventivo',
+    name: 'BitacoraPreventivo',
+    component: () => import('../views/BitacoraPreventivo.vue')
   },
   {
     path: '/calendario',

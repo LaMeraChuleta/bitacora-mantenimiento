@@ -12,7 +12,7 @@ export default {
 
 <template>
   <div>
-    <NavBar></NavBar>
+    <NavBar></NavBar>    
     <FormCalendario></FormCalendario>
   </div>
 </template>

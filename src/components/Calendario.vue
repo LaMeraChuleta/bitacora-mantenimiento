@@ -1,47 +1,21 @@
 <script>
-import NavBar from "../components/NavBar.vue";
 import { mapState } from "vuex";
 export default {
-  components: {
-    NavBar,
-  },
+ 
   data: () => ({
-    weekday: [0, 1, 2, 3, 4, 5, 6],
-    selectedEvent: {},
-    dialog: false,
-    selectedElement: null,
-    selectedOpen: false,
-    value: "",
-    dialogPlaza: false,
-    plazaSelect: "",
     plaza: "",
-    events: [
-      {
-        name: ["A01"].toString(),
-        start: new Date(Date.parse("2020/11/01")),
-        end: "",
-        color: "#FF5252",
-        timed: false,
-      },
-      {
-        name: ["A01"].toString(),
-        start: new Date(Date.parse("2020/11/09")),
-        end: "",
-        color: "#FF5252",
-        timed: false,
-      },
-      {
-        name: ["A01"].toString(),
-        start: new Date(Date.parse("2020/11/11")),
-        end: "",
-        color: "#FF5252",
-        timed: false,
-      },
-    ],
+    events: [],
+    dialog: false,
+    plazaSelect: "",
+    selectedEvent: {},
+    dialogPlaza: false,
+    selectedOpen: false,
+    selectedElement: null,
     tipoActividad: [
       { value: 0, text: "Semanal" },
       { value: 1, text: "Mensual" },
     ],
+    weekday: [0, 1, 2, 3, 4, 5, 6],
     actividadSelect: "",
     carrilesSelect: "",
   }),
@@ -49,7 +23,7 @@ export default {
   //                 CICLO DE VIDA                  //
   ////////////////////////////////////////////////////
   beforeMount() {
-    this.OpcionesPlaza();
+    this.opcionesPlaza();
   },
   ////////////////////////////////////////////////////
   //                 CAPUTADAS                       //
@@ -65,7 +39,11 @@ export default {
     },
     carriles() {
       return this.CARRILES.map((item) => ({
-        value: { capufeLaneNum: item.capufeLaneNum, idGare: item.idGare, lane: item.lane },
+        value: {
+          capufeLaneNum: item.capufeLaneNum,
+          idGare: item.idGare,
+          lane: item.lane,
+        },
         text: item.lane,
       }));
     },
@@ -108,7 +86,7 @@ export default {
       open();
       nativeEvent.stopPropagation();
     },
-    OpcionesPlaza() {
+    opcionesPlaza() {
       if (this.plazaSelect != "") {
         //Crear el titulo Plaza
         let id_nombre = this.USER.find(
@@ -119,17 +97,17 @@ export default {
         this.$store.dispatch("Login/GET_CARRILES", this.plazaSelect);
       } else {
         this.plazaSelect = this.USER[0].squareCatalogId;
-        this.OpcionesPlaza();
+        this.opcionesPlaza();
       }
       this.plazaSelect = "";
     },
     actualizarPlaza() {
-      this.OpcionesPlaza();
+      this.opcionesPlaza();
       this.dialogPlaza = false;
     },
     show(value) {
       let fecha = value.split("-");
-      fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;      
+      fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;
       this.events.push({
         name: this.actividadSelect == 0 ? "Semanal" : "Mensual",
         color: this.actividadSelect == 0 ? "#08B838" : "#FF5252",
@@ -145,19 +123,20 @@ export default {
     getEventColor(event) {
       return event.color;
     },
-    eliminarActividad(){      
-      let index = this.events.findIndex(item => item.start == this.selectedEvent.start)
-      this.events.splice(index, 1)    
-      this.selectedEvent = {}
-      this.selectedOpen = false  
-    }
+    eliminarActividad() {
+      let index = this.events.findIndex(
+        (item) => item.start == this.selectedEvent.start
+      );
+      this.events.splice(index, 1);
+      this.selectedEvent = {};
+      this.selectedOpen = false;
+    },
   },
 };
 </script>
 <template>
-  <div>
-    <NavBar></NavBar>
-    <div class="pa-md-16 pa-5 mt-md-10 mt-16">
+  <div>    
+    <v-container class="pa-md-10 pa-5 mt-md-10 mt-16">
       <!-- ///////////////////////////////////////////////////////////
     //               Header Codigo de Colores                     ///
     //////////////////////////////////////////////////////////////// -->
@@ -168,7 +147,7 @@ export default {
           </v-card-title>
           <v-card-text>
             <v-row>
-              <v-col cols="6">
+              <v-col cols="8">
                 <h3 class="ma-3">Calendario de Mantenimiento Preventivo</h3>
                 <h3 class="ma-3 text-capitalize" v-if="$refs.calendar">
                   Correspondiente al mes de: {{ $refs.calendar.title }}
@@ -189,7 +168,7 @@ export default {
                   >Cambiar plaza</v-btn
                 >
               </v-col>
-              <v-col cols="6" class="text-center">
+              <v-col cols="4" >
                 <h3 class="ma-2">Codigo de Colores</h3>
                 <div class="ml-16">
                   <p class="d-inline green--text">° Verde -</p>
@@ -248,6 +227,19 @@ export default {
           @click:event="showEvent"
           @click:date="dialog = true"
         ></v-calendar>
+        <!-- ///////////////////////////////////////////////////////////////
+    //                Text Area Observaciones                    ///
+    //////////////////////////////////////////////////////////////// -->
+        <h5 class="mt-2">
+          *El horario del mantenimiento esta comtemplado de las 9:00 a las 19:00
+          hrs de cada dia.
+        </h5>
+        <v-sheet class="mt-10">
+          <v-textarea outlined label="Observaciones Mensuales"></v-textarea>
+        </v-sheet>
+        <v-sheet class="mt-2 mb-10">
+          <v-btn outlined color="primary">Imprimir Reporte</v-btn>
+        </v-sheet>
         <!-- ///////////////////////////////////////////////////////////
     //                       Modal Actividad                     ///
     //////////////////////////////////////////////////////////////// -->
@@ -258,10 +250,14 @@ export default {
           offset-y
         >
           <v-card color="grey lighten-4" min-width="350px" flat>
-            <v-toolbar :color="selectedEvent.color" dark>              
-              <v-toolbar-title>Actividad {{ selectedEvent.name }}</v-toolbar-title>
-              <v-spacer></v-spacer>              
-              <v-btn @click="eliminarActividad" icon><v-icon>mdi-delete</v-icon></v-btn>
+            <v-toolbar :color="selectedEvent.color" dark>
+              <v-toolbar-title
+                >Actividad {{ selectedEvent.name }}</v-toolbar-title
+              >
+              <v-spacer></v-spacer>
+              <v-btn @click="eliminarActividad" icon
+                ><v-icon>mdi-delete</v-icon></v-btn
+              >
             </v-toolbar>
             <v-card-text>
               <span v-html="selectedEvent.carriles"></span>
@@ -273,16 +269,6 @@ export default {
             </v-card-actions>
           </v-card>
         </v-menu>
-      </v-sheet>
-      <h5 class="mt-2">
-        *El horario del mantenimiento esta comtemplado de las 9:00 a las 19:00
-        hrs de cada dia.
-      </h5>
-      <v-sheet class="mt-10">
-        <v-textarea outlined label="Observaciones"></v-textarea>
-      </v-sheet>
-      <v-sheet class="mt-2">
-        <v-btn outlined color="primary">Imprimir Reporte</v-btn>
       </v-sheet>
       <!-- ////////////////////////////////////////////////////////////
     //                   Modal de Actividades                    ///
@@ -375,6 +361,6 @@ export default {
           </v-card>
         </v-dialog>
       </div>
-    </div>
+    </v-container>
   </div>
 </template>
