@@ -1,7 +1,7 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
-const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+const PATH_RUTA = "https://localhost:44358/api";
 export default {
   data: () => ({
     plaza: "",
@@ -140,22 +140,23 @@ export default {
 
       let map = this.events.map((item) => {
         let obj = {};
-        obj["capufeLaneNum"] = item.carriles.map((item) => item.capufeLaneNum);
-        obj["idgare"] = item.carriles.map((item) => item.idGare);
-        obj["squareCatalogId"] = idPlaza;
-        (obj["userId"] = idUser),
-          (obj["day"] = item.start.getDate()),
-          (obj["month"] = item.start.getMonth() + 1),
-          (obj["year"] = item.start.getFullYear()),
-          (obj["FinalFlag"] = false),
-          (obj["comment"] = this.comentario);
+        obj["frequencyId"] = this.tipoActividad.find(actividad => actividad.text === item.name).value,
+        obj["capufeLaneNums"] = item.carriles.map((item) => item.capufeLaneNum);
+        obj["idGares"] = item.carriles.map((item) => item.idGare);
+        obj["squareId"] = idPlaza;
+        obj["userId"] = idUser,
+        obj["day"] = item.start.getDate(),
+        obj["month"] = item.start.getMonth() + 1,
+        obj["year"] = item.start.getFullYear(),
+        obj["FinalFlag"] = false,
+        obj["comment"] = this.comentario;
         return obj;
       });
 
       for (let item of map) {
         console.log(item)
         Axios.post(
-          `${PATH_RUTA}/Calendario/Actividad/`,item
+          `${PATH_RUTA}/Calendario/Actividad`,item
         )
           .then((response) => {
             console.log(response);
