@@ -1,7 +1,8 @@
 <script>
 import { mapState } from "vuex";
+import Axios from "axios";
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
 export default {
- 
   data: () => ({
     plaza: "",
     events: [],
@@ -12,12 +13,16 @@ export default {
     selectedOpen: false,
     selectedElement: null,
     tipoActividad: [
-      { value: 0, text: "Semanal" },
-      { value: 1, text: "Mensual" },
+      { value: 1, text: "Semanal" },
+      { value: 2, text: "Mensual" },
+      { value: 3, text: "Trimestral" },
+      { value: 4, text: "Semestral" },
+      { value: 5, text: "Anual" },
     ],
     weekday: [0, 1, 2, 3, 4, 5, 6],
     actividadSelect: "",
     carrilesSelect: "",
+    comentario: "",
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
@@ -88,12 +93,10 @@ export default {
     },
     opcionesPlaza() {
       if (this.plazaSelect != "") {
-        //Crear el titulo Plaza
         let id_nombre = this.USER.find(
           (item) => item.squareCatalogId == this.plazaSelect
         );
         this.plaza = `${id_nombre.squareCatalogId} ${id_nombre.squareName}`;
-        //Busca los carriles por Plaza
         this.$store.dispatch("Login/GET_CARRILES", this.plazaSelect);
       } else {
         this.plazaSelect = this.USER[0].squareCatalogId;
@@ -109,8 +112,8 @@ export default {
       let fecha = value.split("-");
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;
       this.events.push({
-        name: this.actividadSelect == 0 ? "Semanal" : "Mensual",
-        color: this.actividadSelect == 0 ? "#08B838" : "#FF5252",
+        name: this.actividadSelect == 1 ? "Semanal" : "Mensual",
+        color: this.actividadSelect == 1 ? "#08B838" : "#FF5252",
         start: new Date(Date.parse(fecha)),
         carriles: this.carrilesSelect,
         timed: false,
@@ -131,11 +134,46 @@ export default {
       this.selectedEvent = {};
       this.selectedOpen = false;
     },
+    guardarInfo() {
+      const idPlaza = this.plaza.slice(0, 3);
+      const idUser = this.USER[0].userId;
+
+      let map = this.events.map((item) => {
+        let obj = {};
+        obj["capufeLaneNum"] = item.carriles.map((item) => item.capufeLaneNum);
+        obj["idgare"] = item.carriles.map((item) => item.idGare);
+        obj["squareCatalogId"] = idPlaza;
+        (obj["userId"] = idUser),
+          (obj["day"] = item.start.getDate()),
+          (obj["month"] = item.start.getMonth() + 1),
+          (obj["year"] = item.start.getFullYear()),
+          (obj["FinalFlag"] = false),
+          (obj["comment"] = this.comentario);
+        return obj;
+      });
+
+      for (let item of map) {
+        console.log(item)
+        Axios.post(
+          `${PATH_RUTA}/Calendario/Actividad/`,item
+        )
+          .then((response) => {
+            console.log(response);
+            if (response.status === 200) {
+                console.log('bien')
+            }
+          })
+          .catch((ex) => {
+            console.log("cath");
+            console.log(ex);
+          });
+      }
+    },
   },
 };
 </script>
 <template>
-  <div>    
+  <div>
     <v-container class="pa-md-10 pa-5 mt-md-10 mt-16">
       <!-- ///////////////////////////////////////////////////////////
     //               Header Codigo de Colores                     ///
@@ -168,7 +206,7 @@ export default {
                   >Cambiar plaza</v-btn
                 >
               </v-col>
-              <v-col cols="4" >
+              <v-col cols="4">
                 <h3 class="ma-2">Codigo de Colores</h3>
                 <div class="ml-16">
                   <p class="d-inline green--text">° Verde -</p>
@@ -235,10 +273,16 @@ export default {
           hrs de cada dia.
         </h5>
         <v-sheet class="mt-10">
-          <v-textarea outlined label="Observaciones Mensuales"></v-textarea>
+          <v-textarea
+            v-model="comentario"
+            outlined
+            label="Observaciones Mensuales"
+          ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn outlined color="primary">Imprimir Reporte</v-btn>
+          <v-btn @click="guardarInfo" outlined color="primary"
+            >Imprimir Reporte</v-btn
+          >
         </v-sheet>
         <!-- ///////////////////////////////////////////////////////////
     //                       Modal Actividad                     ///
