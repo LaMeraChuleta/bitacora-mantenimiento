@@ -79,6 +79,7 @@ export default {
   ////////////////////////////////////////////////////
   methods: {
     getEventos(mes, año) {
+      console.log('aqui espiezo')
       if (mes === undefined || año === undefined) {
         let fecha = new Date();
         mes = fecha.getMonth() + 1;
@@ -117,12 +118,13 @@ export default {
                   idGare: item2.idGare,
                 });
               }
-              let fecha = `${año}-${mes}-${parseInt(item[0].day) + 1}`;
-              let colorName = this.codigoColores(item[0].frequencyId)              
+              let fecha = `${año}-${mes}-${item[0].day}`;
+              let colorName = this.codigoColores(item[0].frequencyId)     
+
               this.events.push({
                 name: colorName.name,
                 color: colorName.color,
-                start: new Date(Date.parse(fecha)),
+                start: fecha,
                 carriles: carriles,
                 timed: false,
                 end: "",
@@ -204,7 +206,7 @@ export default {
     },
       codigoColores(_idSemanal) {
       let obj = {};
-      switch (_idSemanal) {
+      switch (parseInt(_idSemanal)) {
         case 1:
           obj = { name: "Semanal", color: "green" };
           break;
@@ -226,7 +228,7 @@ export default {
 
       return obj;
     },
-    guardarInfo() {
+    async guardarInfo() {
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
 
@@ -252,7 +254,7 @@ export default {
       console.log(map);
       for (let item of map) {
         console.log(item);
-        Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
+        await Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
           .then((response) => {
             console.log(response);
           })
