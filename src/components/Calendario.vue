@@ -2,6 +2,7 @@
 import { mapState } from "vuex";
 import Axios from "axios";
 const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+//const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: () => ({
     plaza: "",
@@ -28,6 +29,7 @@ export default {
   //                 CICLO DE VIDA                  //
   ////////////////////////////////////////////////////
   beforeMount() {
+
     this.opcionesPlaza();
   },
   ////////////////////////////////////////////////////
@@ -75,6 +77,33 @@ export default {
   //                 METODOS                        //
   ////////////////////////////////////////////////////
   methods: {
+
+    prueba(){
+
+      const idPlaza = this.plaza.slice(0, 3);
+      const idUser = this.USER[0].userId;
+
+    let item = {
+
+        "userId": idUser,
+        "squareId": idPlaza,
+        "month": 11,
+        "year": 2020
+    }
+      
+      
+       Axios.get(`https://localhost:44358/api/Calendario/ActividadMesYear`, item)
+          .then((response) => {            
+            if (response.status === 200) {
+                console.log('bien')
+            }
+          })
+          .catch((ex) => {
+            console.log("cath");
+            console.log(ex);
+          });
+      
+    },
     getEvents({ start, end }) {
       console.log(start);
       console.log(end);
@@ -280,7 +309,7 @@ export default {
           ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn @click="guardarInfo" outlined color="primary"
+          <v-btn @click="prueba" outlined color="primary"
             >Imprimir Reporte</v-btn
           >
         </v-sheet>
