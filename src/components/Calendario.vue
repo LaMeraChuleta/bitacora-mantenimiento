@@ -79,7 +79,6 @@ export default {
   ////////////////////////////////////////////////////
   methods: {
     getEventos(mes, año) {
-
       if (mes === undefined || año === undefined) {
         let fecha = new Date();
         mes = fecha.getMonth() + 1;
@@ -88,7 +87,7 @@ export default {
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
 
-      this.events = []
+      this.events = [];
       let item = {
         userId: idUser,
         squareId: idPlaza,
@@ -118,12 +117,11 @@ export default {
                   idGare: item2.idGare,
                 });
               }
-              console.log(item);
               let fecha = `${año}-${mes}-${parseInt(item[0].day) + 1}`;
-              console.log(fecha);
+              let colorName = this.codigoColores(item[0].frequencyId)              
               this.events.push({
-                name: item[0].frequencyId == 1 ? "Semanal" : "Mensual",
-                color: item[0].frequencyId == 1 ? "#08B838" : "#FF5252",
+                name: colorName.name,
+                color: colorName.color,
                 start: new Date(Date.parse(fecha)),
                 carriles: carriles,
                 timed: false,
@@ -167,18 +165,24 @@ export default {
       this.plazaSelect = "";
     },
     actualizarPlaza() {
-      this.opcionesPlaza();      
-      this.getEventos()
+      this.opcionesPlaza();
+      this.getEventos();
       this.dialogPlaza = false;
     },
     agregarEvent(value) {
       let fecha = value.split("-");
-      fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;
-      console.log(fecha);
+      let _fecha = fecha;
+      //Formato YYYY-/
+      fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2])}`;
+      let colorName = this.codigoColores(this.actividadSelect)
+      console.log(colorName)
       this.events.push({
-        name: this.actividadSelect == 1 ? "Semanal" : "Mensual",
-        color: this.actividadSelect == 1 ? "#08B838" : "#FF5252",
-        start: new Date(Date.parse(fecha)),
+        name: colorName.name,
+        color: colorName.color,
+        start: fecha,
+        day: parseInt(_fecha[2]),
+        month: parseInt(_fecha[1]),
+        year: parseInt(_fecha[0]),
         carriles: this.carrilesSelect,
         timed: false,
         end: "",
@@ -198,6 +202,30 @@ export default {
       this.selectedEvent = {};
       this.selectedOpen = false;
     },
+      codigoColores(_idSemanal) {
+      let obj = {};
+      switch (_idSemanal) {
+        case 1:
+          obj = { name: "Semanal", color: "green" };
+          break;
+        case 2:
+          obj = { name: "Mensual", color: "red" };
+          break;
+        case 3:
+          obj = { name: "Trimestral", color: "blue" };
+          break;
+        case 4:
+          obj = { name: "Semestral", color: "pink" };
+          break;
+        case 5:
+          obj = { name: "Anual", color: "orange" };
+          break;
+        default:
+          console.log("mal");
+      }
+
+      return obj;
+    },
     guardarInfo() {
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
@@ -213,14 +241,15 @@ export default {
         obj["idGares"] = item.carriles.map((item) => item.idGare);
         obj["squareId"] = idPlaza;
         (obj["userId"] = idUser),
-          (obj["day"] = item.start.getDate()),
-          (obj["month"] = item.start.getMonth() + 1),
-          (obj["year"] = item.start.getFullYear()),
+          (obj["day"] = item.day),
+          (obj["month"] = item.month),
+          (obj["year"] = item.year),
           (obj["FinalFlag"] = false),
           (obj["comment"] = this.comentario);
         return obj;
       });
 
+      console.log(map);
       for (let item of map) {
         console.log(item);
         Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
@@ -321,7 +350,9 @@ export default {
           v-model="value"
           color="primary"
           type="month"
+          locale="es"
           category-show-all
+          :masks="{ input: ['L', 'YYYY-MM-DD'] }"
           :events="events"
           :weekdays="weekday"
           :event-color="getEventColor"
