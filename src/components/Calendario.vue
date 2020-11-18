@@ -24,13 +24,14 @@ export default {
     actividadSelect: "",
     carrilesSelect: "",
     comentario: "",
+    value: "",
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
   ////////////////////////////////////////////////////
   beforeMount() {
-
     this.opcionesPlaza();
+    this.getEventos(undefined, undefined);
   },
   ////////////////////////////////////////////////////
   //                 CAPUTADAS                       //
@@ -77,32 +78,64 @@ export default {
   //                 METODOS                        //
   ////////////////////////////////////////////////////
   methods: {
+    getEventos(mes, año) {
 
-    prueba(){
-
+      if (mes === undefined || año === undefined) {
+        let fecha = new Date();
+        mes = fecha.getMonth() + 1;
+        año = fecha.getFullYear();
+      }
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
 
-    let item = {
+      this.events = []
+      let item = {
+        userId: idUser,
+        squareId: idPlaza,
+        month: mes,
+        year: año,
+      };
 
-        "userId": idUser,
-        "squareId": idPlaza,
-        "month": 11,
-        "year": 2020
-    }
-      
-      
-       Axios.get(`https://localhost:44358/api/Calendario/ActividadMesYear`, item)
-          .then((response) => {            
-            if (response.status === 200) {
-                console.log('bien')
+      Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear`, item)
+        .then((response) => {
+          console.log(response.data.result);
+          if (response.status === 200) {
+            var i = 1;
+            let _eventos = [];
+            while (i < 31) {
+              let query = response.data.result.filter((item) => item.day == i);
+              if (query.length > 0) {
+                _eventos.push(query);
+              }
+              i++;
             }
-          })
-          .catch((ex) => {
-            console.log("cath");
-            console.log(ex);
-          });
-      
+            for (let item of _eventos) {
+              let carriles = [];
+              for (let item2 of item) {
+                carriles.push({
+                  lane: item2.lane,
+                  capufeLaneNum: item2.capufeLaneNum,
+                  idGare: item2.idGare,
+                });
+              }
+              console.log(item);
+              let fecha = `${año}-${mes}-${parseInt(item[0].day) + 1}`;
+              console.log(fecha);
+              this.events.push({
+                name: item[0].frequencyId == 1 ? "Semanal" : "Mensual",
+                color: item[0].frequencyId == 1 ? "#08B838" : "#FF5252",
+                start: new Date(Date.parse(fecha)),
+                carriles: carriles,
+                timed: false,
+                end: "",
+              });
+            }
+          }
+        })
+        .catch((ex) => {
+          console.log("cath");
+          console.log(ex);
+        });
     },
     getEvents({ start, end }) {
       console.log(start);
@@ -134,12 +167,14 @@ export default {
       this.plazaSelect = "";
     },
     actualizarPlaza() {
-      this.opcionesPlaza();
+      this.opcionesPlaza();      
+      this.getEventos()
       this.dialogPlaza = false;
     },
     agregarEvent(value) {
       let fecha = value.split("-");
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;
+      console.log(fecha);
       this.events.push({
         name: this.actividadSelect == 1 ? "Semanal" : "Mensual",
         color: this.actividadSelect == 1 ? "#08B838" : "#FF5252",
@@ -169,28 +204,28 @@ export default {
 
       let map = this.events.map((item) => {
         let obj = {};
-        obj["frequencyId"] = this.tipoActividad.find(actividad => actividad.text === item.name).value,
-        obj["capufeLaneNums"] = item.carriles.map((item) => item.capufeLaneNum);
+        (obj["frequencyId"] = this.tipoActividad.find(
+          (actividad) => actividad.text === item.name
+        ).value),
+          (obj["capufeLaneNums"] = item.carriles.map(
+            (item) => item.capufeLaneNum
+          ));
         obj["idGares"] = item.carriles.map((item) => item.idGare);
         obj["squareId"] = idPlaza;
-        obj["userId"] = idUser,
-        obj["day"] = item.start.getDate(),
-        obj["month"] = item.start.getMonth() + 1,
-        obj["year"] = item.start.getFullYear(),
-        obj["FinalFlag"] = false,
-        obj["comment"] = this.comentario;
+        (obj["userId"] = idUser),
+          (obj["day"] = item.start.getDate()),
+          (obj["month"] = item.start.getMonth() + 1),
+          (obj["year"] = item.start.getFullYear()),
+          (obj["FinalFlag"] = false),
+          (obj["comment"] = this.comentario);
         return obj;
       });
 
       for (let item of map) {
-        console.log(item)
-        Axios.post(
-          `${PATH_RUTA}/Calendario/Actividad`,item
-        )
-          .then((response) => {            
-            if (response.status === 200) {
-                console.log('bien')
-            }
+        console.log(item);
+        Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
+          .then((response) => {
+            console.log(response);
           })
           .catch((ex) => {
             console.log("cath");
@@ -309,7 +344,7 @@ export default {
           ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn @click="prueba" outlined color="primary"
+          <v-btn @click="guardarInfo" outlined color="primary"
             >Imprimir Reporte</v-btn
           >
         </v-sheet>
@@ -387,7 +422,9 @@ export default {
               <v-btn color="primary" text @click="dialog = false"
                 >Cancelar</v-btn
               >
-              <v-btn color="primary" text @click="agregarEvent(value)"> Guardar </v-btn>
+              <v-btn color="primary" text @click="agregarEvent(value)">
+                Guardar
+              </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
