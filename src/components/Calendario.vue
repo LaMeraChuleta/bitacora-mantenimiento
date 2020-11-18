@@ -1,7 +1,7 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
-const PATH_RUTA = "https://localhost:44358/api";
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
 export default {
   data: () => ({
     plaza: "",
@@ -108,7 +108,7 @@ export default {
       this.opcionesPlaza();
       this.dialogPlaza = false;
     },
-    show(value) {
+    agregarEvent(value) {
       let fecha = value.split("-");
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2]) + 1}`;
       this.events.push({
@@ -158,8 +158,7 @@ export default {
         Axios.post(
           `${PATH_RUTA}/Calendario/Actividad`,item
         )
-          .then((response) => {
-            console.log(response);
+          .then((response) => {            
             if (response.status === 200) {
                 console.log('bien')
             }
@@ -359,7 +358,7 @@ export default {
               <v-btn color="primary" text @click="dialog = false"
                 >Cancelar</v-btn
               >
-              <v-btn color="primary" text @click="show(value)"> Guardar </v-btn>
+              <v-btn color="primary" text @click="agregarEvent(value)"> Guardar </v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>

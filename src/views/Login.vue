@@ -1,3 +1,35 @@
+<script>
+import Axios from "axios";
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+export default {
+  data: function () {
+    return {
+      user: {
+        name: "",
+        pass: "",
+      },
+    };
+  },
+  methods: {
+    login: async function () {
+      Axios.get(`${PATH_RUTA}/login/ValidUser/${this.user.name}/${this.user.pass}/${true}`
+      )
+        .then((response) => {
+          console.log(response);
+          if (response.status === 200) {
+            this.$store.commit("Login/USER_MUTATION", response.data.result);            
+            this.$router.push("/home");
+          }
+        })
+        .catch((ex) => {
+          console.log("cath");
+          console.log(ex);
+        });
+    },
+  },
+};
+</script>
+
 <template>
   <div>
     <v-container class="pa-0" fluid>
@@ -48,36 +80,3 @@
     </v-container>
   </div>
 </template>
-
-
-<script>
-import Axios from "axios";
-const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-export default {
-  data: function () {
-    return {
-      user: {
-        name: "",
-        pass: "",
-      },
-    };
-  },
-  methods: {
-    login: async function () {
-      Axios.get(`${PATH_RUTA}/login/ValidUser/${this.user.name}/${this.user.pass}/${true}`
-      )
-        .then((response) => {
-          console.log(response);
-          if (response.status === 200) {
-            this.$store.commit("Login/USER_MUTATION", response.data.result);            
-            this.$router.push("/home");
-          }
-        })
-        .catch((ex) => {
-          console.log("cath");
-          console.log(ex);
-        });
-    },
-  },
-};
-</script>
