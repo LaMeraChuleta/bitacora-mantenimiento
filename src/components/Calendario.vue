@@ -78,9 +78,23 @@ export default {
   //                 METODOS                        //
   ////////////////////////////////////////////////////
   methods: {
+    next(){
+      console.log('Siguiente')
+      this.$refs.calendar.next()   
+console.log(this.$refs)
+      
+    },
+    prev(){
+      console.log('Anterior')
+      this.$refs.calendar.prev()
+      console.log(this.$refs)
+    },
     getEventos(mes, año) {
+      
       console.log('aqui espiezo')
+  
       if (mes === undefined || año === undefined) {
+        console.log(fecha)
         let fecha = new Date();
         mes = fecha.getMonth() + 1;
         año = fecha.getFullYear();
@@ -174,7 +188,7 @@ export default {
     agregarEvent(value) {
       let fecha = value.split("-");
       let _fecha = fecha;
-      //Formato YYYY-/
+      //Formato YYYY-MM-DD
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2])}`;
       let colorName = this.codigoColores(this.actividadSelect)
       console.log(colorName)
@@ -332,14 +346,14 @@ export default {
     //               Cabecera del Calendario                     ///
     //////////////////////////////////////////////////////////////// -->
       <v-sheet tile height="70" class="d-flex justify-center">
-        <v-btn icon class="ma-2" @click="$refs.calendar.prev()">
+        <v-btn icon class="ma-2" @click="prev">
           <v-icon>mdi-chevron-left</v-icon>
         </v-btn>
         <v-toolbar-title class="mt-3 text-capitalize" v-if="$refs.calendar">{{
           $refs.calendar.title
         }}</v-toolbar-title>
         <v-toolbar-title class="mt-3" v-else>{{ titulo }}</v-toolbar-title>
-        <v-btn icon class="ma-2" @click="$refs.calendar.next()">
+        <v-btn icon class="ma-2" @click="next">
           <v-icon>mdi-chevron-right</v-icon>
         </v-btn>
       </v-sheet>
