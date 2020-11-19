@@ -1,8 +1,8 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
-//const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-const PATH_RUTA = "https://localhost:44358/api"
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+//const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: () => ({
     plaza: "",
@@ -25,13 +25,16 @@ export default {
     carrilesSelect: "",
     comentario: "",
     value: "",
+    INSERT_UPDATE: true
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
   ////////////////////////////////////////////////////
   beforeMount() {
     this.opcionesPlaza();
-    this.getEventos(undefined, undefined);
+    this.getEventos(undefined, undefined);   
+    
+    
   },
   ////////////////////////////////////////////////////
   //                 CAPUTADAS                       //
@@ -112,7 +115,8 @@ console.log(this.$refs)
 
       Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear`, item)
         .then((response) => {
-          console.log(response.data.result);
+
+          this.INSERT_UPDATE = response.data.result.length == 0 ? true : false          
           if (response.status === 200) {
             var i = 1;
             let _eventos = [];
@@ -139,6 +143,9 @@ console.log(this.$refs)
                 name: colorName.name,
                 color: colorName.color,
                 start: fecha,
+                day: parseInt(item[0].day),
+                month: mes,
+                year: año,
                 carriles: carriles,
                 timed: false,
                 end: "",
@@ -245,6 +252,8 @@ console.log(this.$refs)
     async guardarInfo() {
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
+      console.log('eventos')
+      console.log(this.events)
 
       let map = this.events.map((item) => {
         let obj = {};
@@ -257,19 +266,55 @@ console.log(this.$refs)
         obj["idGares"] = item.carriles.map((item) => item.idGare);
         obj["squareId"] = idPlaza;
         (obj["userId"] = idUser),
-          (obj["day"] = item.day),
-          (obj["month"] = item.month),
+          obj["day"] = item.day,
+          obj["month"] = item.month,
           (obj["year"] = item.year),
           (obj["FinalFlag"] = false),
           (obj["comment"] = this.comentario);
         return obj;
       });
 
-      console.log(map);
+      let map_nuevo = []
+      for(let item2 of this.events){      
+      let obj = {};
+          (obj["frequencyId"] = this.tipoActividad.find(
+          (actividad) => actividad.text === item2.name
+        ).value),
+          (obj["capufeLaneNums"] = item2.carriles.map(
+            (carril) => carril.capufeLaneNum
+          ));
+        obj["idGares"] = item2.carriles.map((gare) => gare.idGare);
+        obj["squareId"] = idPlaza;
+        (obj["userId"] = idUser),
+          obj["day"] = item2.day,
+          obj["month"] = item2.month,
+          (obj["year"] = item2.year),
+          (obj["FinalFlag"] = false),
+          (obj["comment"] = this.comentario);
+
+        map_nuevo.push(obj)
+      }
+      
+      let _activitiComent = {} 
+      console.log('mapeo') 
+      console.log(map)  
+      console.log(map_nuevo)    
+
       for (let item of map) {
-        console.log('item enviado')
-        console.log(item);
-        await Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
+        
+        let full_path = this.INSERT_UPDATE ? 'Calendario/Actividad' : 'Calendario/Actualizar'        
+        await Axios.post(`${PATH_RUTA}/${full_path}`, item)
+          .then((response) => {
+            _activitiComent = item;
+            console.log(response);
+          })
+          .catch((ex) => {
+            console.log("cath");
+            console.log(ex);
+          });
+        
+      }
+      await Axios.post(`${PATH_RUTA}/Calendario/ObservacionesInsert`, _activitiComent)
           .then((response) => {
             console.log(response);
           })
@@ -277,7 +322,7 @@ console.log(this.$refs)
             console.log("cath");
             console.log(ex);
           });
-      }
+
     },
   },
 };
