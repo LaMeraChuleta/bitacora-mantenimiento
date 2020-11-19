@@ -267,6 +267,7 @@ console.log(this.$refs)
 
       console.log(map);
       for (let item of map) {
+        console.log('item enviado')
         console.log(item);
         await Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
           .then((response) => {
