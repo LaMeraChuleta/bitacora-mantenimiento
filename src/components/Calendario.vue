@@ -1,7 +1,9 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
-import fechaService from "../service/fechaService.js"
+import fechaService from "../service/fechaService.js";
+import saveAs from "file-saver";
+
 const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
 //const PATH_RUTA = "https://localhost:44358/api"
 export default {
@@ -25,7 +27,9 @@ export default {
     actividadSelect: "",
     carrilesSelect: "",
     comentario: "",
-    value: "",   
+    value: "",
+    carrilesDisable: true,
+    INSERT_UPDATE: true,
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
@@ -46,40 +50,82 @@ export default {
         text: item.squareName,
       }));
     },
-    carriles() {
-      return this.CARRILES.map((item) => ({
-        value: {
-          capufeLaneNum: item.capufeLaneNum,
-          idGare: item.idGare,
-          lane: item.lane,
-        },
-        text: item.lane,
-      }));
-    },
-    titulo() { 
-      var f = new Date();
-      return `${fechaService.numero_to_nombre(f.getMonth())} ${f.getFullYear()}`;      
-    },
   },
+  //   carriles() {
+  //     // let _carriles_prohibidos = [];
+  //     // for (let evento of this.events) {
+  //     //   if (evento.name != "Semanal") {
+  //     //     for (let carril of evento.carriles) {
+  //     //       _carriles_prohibidos.push(carril);
+  //     //     }
+  //     //   }
+  //     // }
+  //     // let _carriles = [];
+  //     // for (let carrilesFull of this.CARRILES) {
+  //     //   let map = _carriles_prohibidos.findIndex(
+  //     //     (item) =>
+  //     //       item.capufeLaneNum == carrilesFull.capufeLaneNum &&
+  //     //       item.idGare == carrilesFull.idGare
+  //     //   );
+  //     //   if (map == -1) {
+  //     //     _carriles.push({
+  //     //       value: {
+  //     //         capufeLaneNum: carrilesFull.capufeLaneNum,
+  //     //         idGare: carrilesFull.idGare,
+  //     //         lane: carrilesFull.lane,
+  //     //       },
+  //     //       text: carrilesFull.lane,
+  //     //     });
+  //     //   }
+  //     //   // console.log(map)
+  //     //   // for (let carrilProhibido of _carriles_prohibidos) {
+  //     //   //   let valida = carrilesFull.capufeLaneNum == carrilProhibido.capufeLaneNum && carrilesFull.idGare == carrilProhibido.idGare
+  //     //   //   if (!valida){
+  //     //   //     _carriles.push({
+  //     //   //       value: {
+  //     //   //         capufeLaneNum: carrilesFull.capufeLaneNum,
+  //     //   //         idGare: carrilesFull.idGare,
+  //     //   //         lane: carrilesFull.lane,
+  //     //   //       },
+  //     //   //       text: carrilesFull.lane,
+  //     //   //     });
+  //     //   //   }
+  //     //   // }
+  //     // }
+  //     // console.log(_carriles.length);
+
+  //     return this.CARRILES.map((item) => ({
+  //       value: {
+  //         capufeLaneNum: item.capufeLaneNum,
+  //         idGare: item.idGare,
+  //         lane: item.lane,
+  //       },
+  //       text: item.lane,
+  //     }));
+  //   },
+  //   titulo() {
+  //     var f = new Date();
+  //     return `${fechaService.numero_to_nombre(
+  //       f.getMonth()
+  //     )} ${f.getFullYear()}`;
+  //   },
+  // },
   ////////////////////////////////////////////////////
   //                 METODOS                        //
   ////////////////////////////////////////////////////
   methods: {
-    next(){      
-      this.$refs.calendar.next()
-      let _fecha_actual = this.value.split('-')
-      this.getEventos(_fecha_actual[1], _fecha_actual[0])
+    next() {
+      this.$refs.calendar.next();
+      let _fecha_actual = this.value.split("-");
+      this.getEventos(_fecha_actual[1], _fecha_actual[0]);
     },
-    prev(){      
-      this.$refs.calendar.prev()  
-      let _fecha_actual = this.value.split('-')      
-      this.getEventos(_fecha_actual[1], _fecha_actual[0])
+    prev() {
+      this.$refs.calendar.prev();
+      let _fecha_actual = this.value.split("-");
+      this.getEventos(_fecha_actual[1], _fecha_actual[0]);
     },
     getEventos(mes, año) {
-      
-      console.log('get Eventos')
       if (mes === undefined || año === undefined) {
-        console.log(fecha)
         let fecha = new Date();
         mes = fecha.getMonth() + 1;
         año = fecha.getFullYear();
@@ -94,9 +140,19 @@ export default {
         year: año,
       };
 
+      Axios.post(`${PATH_RUTA}/Calendario/getComentario`, item)
+        .then((response) => {
+          if (response.status == 200)
+            this.comentario = response.data.result.table[0].comment;
+        })
+        .catch((ex) => {
+          this.comentario = "";
+          console.log(ex);
+        });
+
       Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear`, item)
         .then((response) => {
-          console.log(response.data.result);
+          this.INSERT_UPDATE = response.data.result.length == 0 ? true : false;
           if (response.status === 200) {
             var i = 1;
             let _eventos = [];
@@ -117,11 +173,14 @@ export default {
                 });
               }
               let fecha = `${año}-${mes}-${item[0].day}`;
-              let colorName = this.codigoColores(item[0].frequencyId)     
+              let colorName = this.codigoColores(item[0].frequencyId);
               this.events.push({
                 name: colorName.name,
                 color: colorName.color,
                 start: fecha,
+                day: parseInt(item[0].day),
+                month: mes,
+                year: año,
                 carriles: carriles,
                 timed: false,
                 end: "",
@@ -129,13 +188,44 @@ export default {
             }
           }
         })
-        .catch((ex) => {          
+        .catch((ex) => {
           console.log(ex);
         });
     },
-    getEvents({ start, end }) {
-      console.log(start);
-      console.log(end);
+    getPDF() {
+      let mes,
+        año = "";
+      if (this.value == "") {
+        let fecha = new Date();
+        mes = fecha.getMonth() + 1;
+        año = fecha.getFullYear();
+      } else {
+        let fecha = this.value.split("-");
+        mes = fecha[1];
+        año = fecha[0];
+      }
+      const idPlaza = this.plaza.slice(0, 3);
+      const idUser = this.USER[0].userId;
+
+      var oReq = new XMLHttpRequest();
+      let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${mes}/${año}/${idUser}/${idPlaza}`;
+      let namePdf = `REPORTE-${fechaService.numero_to_nombre(mes)}.pdf`;
+      // Configure XMLHttpRequest
+      oReq.open("GET", urlTopdf, true);
+      // Important to use the blob response type
+      oReq.responseType = "blob";
+      // When the file request finishes
+      // Is up to you, the configuration for error events etc.
+      oReq.onload = function () {
+        // Once the file is downloaded, open a new window with the PDF
+        // Remember to allow the POP-UPS in your browser
+        var file = new Blob([oReq.response], {
+          type: "application/pdf",
+        });
+        // Generate file download directly in the browser !
+        saveAs(file, namePdf);
+      };
+      oReq.send();
     },
     showEvent({ nativeEvent, event }) {
       console.log(event);
@@ -172,7 +262,7 @@ export default {
       let _fecha = fecha;
       //Formato YYYY-MM-DD
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2])}`;
-      let colorName = this.codigoColores(this.actividadSelect)      
+      let colorName = this.codigoColores(this.actividadSelect);
       this.events.push({
         name: colorName.name,
         color: colorName.color,
@@ -197,6 +287,7 @@ export default {
       );
       this.events.splice(index, 1);
       this.selectedEvent = {};
+      this.guardarInfo();
       this.selectedOpen = false;
     },
     codigoColores(_idSemanal) {
@@ -231,29 +322,119 @@ export default {
         (obj["frequencyId"] = this.tipoActividad.find(
           (actividad) => actividad.text === item.name
         ).value),
-        (obj["capufeLaneNums"] = item.carriles.map(
+          (obj["capufeLaneNums"] = item.carriles.map(
             (item) => item.capufeLaneNum
           ));
         obj["idGares"] = item.carriles.map((item) => item.idGare);
         obj["squareId"] = idPlaza;
         (obj["userId"] = idUser),
-        (obj["day"] = item.day),
-        (obj["month"] = item.month),
-        (obj["year"] = item.year),
-        (obj["FinalFlag"] = false),
-        (obj["comment"] = this.comentario);
+          (obj["day"] = item.day),
+          (obj["month"] = item.month),
+          (obj["year"] = item.year),
+          (obj["FinalFlag"] = false),
+          (obj["comment"] = this.comentario);
         return obj;
       });
 
-      for (let item of map) {      
-        await Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
+      let map_nuevo = [];
+      for (let item2 of this.events) {
+        let obj = {};
+        (obj["frequencyId"] = this.tipoActividad.find(
+          (actividad) => actividad.text === item2.name
+        ).value),
+          (obj["capufeLaneNums"] = item2.carriles.map(
+            (carril) => carril.capufeLaneNum
+          ));
+        obj["idGares"] = item2.carriles.map((gare) => gare.idGare);
+        obj["squareId"] = idPlaza;
+        (obj["userId"] = idUser),
+          (obj["day"] = item2.day),
+          (obj["month"] = item2.month),
+          (obj["year"] = item2.year),
+          (obj["FinalFlag"] = false),
+          (obj["comment"] = this.comentario);
+
+        map_nuevo.push(obj);
+      }
+
+      let _activitiComent = {};
+
+      for (let item of map) {
+        let full_path = this.INSERT_UPDATE
+          ? "Calendario/Actividad"
+          : "Calendario/Actualizar";
+        await Axios.post(`${PATH_RUTA}/${full_path}`, item)
           .then((response) => {
+            _activitiComent = item;
             console.log(response);
           })
           .catch((ex) => {
             console.log("cath");
             console.log(ex);
           });
+      }
+      await Axios.post(
+        `${PATH_RUTA}/Calendario/ObservacionesInsert`,
+        _activitiComent
+      )
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((ex) => {
+          console.log("cath");
+          console.log(ex);
+        });
+    },
+    openDialogEvent({ date }) {
+      console.log(date);
+      //let fecha = date.split("-");
+      // this.guardarInfo()
+      // this.getEventos(fecha[1], fecha[0]);
+      this.carrilesDisable = true;
+      this.dialog = true;
+    },
+    carriles() {
+      if (this.actividadSelect == "") {
+        this.carrilesDisable = true;
+      } else if (this.actividadSelect == 1) {
+        this.carrilesDisable = false;
+        return this.CARRILES.map((item) => ({
+          value: {
+            capufeLaneNum: item.capufeLaneNum,
+            idGare: item.idGare,
+            lane: item.lane,
+          },
+          text: item.lane,
+        }));
+      } else if (this.actividadSelect > 1) {
+        let _carriles_prohibidos = [];
+        for (let evento of this.events) {
+          if (evento.name != "Semanal") {
+            for (let carril of evento.carriles) {
+              _carriles_prohibidos.push(carril);
+            }
+          }
+        }
+        let _carriles = [];
+        for (let carrilesFull of this.CARRILES) {
+          let map = _carriles_prohibidos.findIndex(
+            (item) =>
+              item.capufeLaneNum == carrilesFull.capufeLaneNum &&
+              item.idGare == carrilesFull.idGare
+          );
+          if (map == -1) {
+            _carriles.push({
+              value: {
+                capufeLaneNum: carrilesFull.capufeLaneNum,
+                idGare: carrilesFull.idGare,
+                lane: carrilesFull.lane,
+              },
+              text: carrilesFull.lane,
+            });
+          }
+        }
+        this.carrilesDisable = false;
+        return _carriles;
       }
     },
   },
@@ -352,7 +533,7 @@ export default {
           :event-color="getEventColor"
           event-overlap-mode="stack"
           @click:event="showEvent"
-          @click:date="dialog = true"
+          @click:date="openDialogEvent"
         ></v-calendar>
         <!-- ///////////////////////////////////////////////////////////////
     //                Text Area Observaciones                    ///
@@ -369,7 +550,10 @@ export default {
           ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn @click="guardarInfo" outlined color="primary"
+          <v-btn @click="guardarInfo" outlined color="primary" class="ma-2"
+            >Guardar Cambios</v-btn
+          >
+          <v-btn @click="getPDF()" outlined color="red" class="ma-2"
             >Imprimir Reporte</v-btn
           >
         </v-sheet>
@@ -393,7 +577,19 @@ export default {
               >
             </v-toolbar>
             <v-card-text>
-              <span v-html="selectedEvent.carriles"></span>
+              <v-list-item class="flex d-block text-center">
+                <v-list-item-content
+                  v-for="(carril, key) in selectedEvent.carriles"
+                  :key="key"
+                >
+                  <v-list-item-title
+                    >Carril: {{ carril.lane }}</v-list-item-title
+                  >
+                  <v-list-item-subtitle>
+                    IdGare: {{ carril.idGare }}</v-list-item-subtitle
+                  >
+                </v-list-item-content>
+              </v-list-item>
             </v-card-text>
             <v-card-actions>
               <v-btn text color="secondary" @click="selectedOpen = false">
@@ -429,8 +625,9 @@ export default {
                   <v-col cols="6" class="d-inline">
                     <v-select
                       v-model="carrilesSelect"
-                      :items="carriles"
+                      :items="carriles()"
                       dense
+                      :disabled="carrilesDisable"
                       outlined
                       multiple
                       hide-details
