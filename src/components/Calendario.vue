@@ -1,8 +1,9 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
-//const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-const PATH_RUTA = "https://localhost:44358/api"
+import fechaService from "../service/fechaService.js"
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+//const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: () => ({
     plaza: "",
@@ -24,7 +25,7 @@ export default {
     actividadSelect: "",
     carrilesSelect: "",
     comentario: "",
-    value: "",
+    value: "",   
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
@@ -55,44 +56,28 @@ export default {
         text: item.lane,
       }));
     },
-    titulo() {
-      var meses = new Array(
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre"
-      );
+    titulo() { 
       var f = new Date();
-      return `${meses[f.getMonth()]} ${f.getFullYear()}`;
+      return `${fechaService.numero_to_nombre(f.getMonth())} ${f.getFullYear()}`;      
     },
   },
   ////////////////////////////////////////////////////
   //                 METODOS                        //
   ////////////////////////////////////////////////////
   methods: {
-    next(){
-      console.log('Siguiente')
-      this.$refs.calendar.next()   
-console.log(this.$refs)
-      
+    next(){      
+      this.$refs.calendar.next()
+      let _fecha_actual = this.value.split('-')
+      this.getEventos(_fecha_actual[1], _fecha_actual[0])
     },
-    prev(){
-      console.log('Anterior')
-      this.$refs.calendar.prev()
-      console.log(this.$refs)
+    prev(){      
+      this.$refs.calendar.prev()  
+      let _fecha_actual = this.value.split('-')      
+      this.getEventos(_fecha_actual[1], _fecha_actual[0])
     },
     getEventos(mes, año) {
       
-      console.log('aqui espiezo')
-  
+      console.log('get Eventos')
       if (mes === undefined || año === undefined) {
         console.log(fecha)
         let fecha = new Date();
@@ -101,7 +86,6 @@ console.log(this.$refs)
       }
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
-
       this.events = [];
       let item = {
         userId: idUser,
@@ -134,7 +118,6 @@ console.log(this.$refs)
               }
               let fecha = `${año}-${mes}-${item[0].day}`;
               let colorName = this.codigoColores(item[0].frequencyId)     
-
               this.events.push({
                 name: colorName.name,
                 color: colorName.color,
@@ -146,8 +129,7 @@ console.log(this.$refs)
             }
           }
         })
-        .catch((ex) => {
-          console.log("cath");
+        .catch((ex) => {          
           console.log(ex);
         });
     },
@@ -190,8 +172,7 @@ console.log(this.$refs)
       let _fecha = fecha;
       //Formato YYYY-MM-DD
       fecha = `${fecha[0]}-${fecha[1]}-${parseInt(fecha[2])}`;
-      let colorName = this.codigoColores(this.actividadSelect)
-      console.log(colorName)
+      let colorName = this.codigoColores(this.actividadSelect)      
       this.events.push({
         name: colorName.name,
         color: colorName.color,
@@ -218,7 +199,7 @@ console.log(this.$refs)
       this.selectedEvent = {};
       this.selectedOpen = false;
     },
-      codigoColores(_idSemanal) {
+    codigoColores(_idSemanal) {
       let obj = {};
       switch (parseInt(_idSemanal)) {
         case 1:
@@ -239,7 +220,6 @@ console.log(this.$refs)
         default:
           console.log("mal");
       }
-
       return obj;
     },
     async guardarInfo() {
@@ -251,24 +231,21 @@ console.log(this.$refs)
         (obj["frequencyId"] = this.tipoActividad.find(
           (actividad) => actividad.text === item.name
         ).value),
-          (obj["capufeLaneNums"] = item.carriles.map(
+        (obj["capufeLaneNums"] = item.carriles.map(
             (item) => item.capufeLaneNum
           ));
         obj["idGares"] = item.carriles.map((item) => item.idGare);
         obj["squareId"] = idPlaza;
         (obj["userId"] = idUser),
-          (obj["day"] = item.day),
-          (obj["month"] = item.month),
-          (obj["year"] = item.year),
-          (obj["FinalFlag"] = false),
-          (obj["comment"] = this.comentario);
+        (obj["day"] = item.day),
+        (obj["month"] = item.month),
+        (obj["year"] = item.year),
+        (obj["FinalFlag"] = false),
+        (obj["comment"] = this.comentario);
         return obj;
       });
 
-      console.log(map);
-      for (let item of map) {
-        console.log('item enviado')
-        console.log(item);
+      for (let item of map) {      
         await Axios.post(`${PATH_RUTA}/Calendario/Actividad`, item)
           .then((response) => {
             console.log(response);
