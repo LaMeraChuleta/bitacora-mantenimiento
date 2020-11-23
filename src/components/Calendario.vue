@@ -1,6 +1,7 @@
 <script>
 import { mapState } from "vuex";
 import Axios from "axios";
+import saveAs from "file-saver";
 const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
 //const PATH_RUTA = "https://localhost:44358/api"
 export default {
@@ -83,15 +84,110 @@ export default {
   methods: {
     next(){
       console.log('Siguiente')
-      this.$refs.calendar.next()   
-console.log(this.$refs)
+      this.$refs.calendar.next()  
+       
+      // let _splitTitle = this.$refs.calendar.title.split(' ')
+      // let mes = this.fehcaMEsCAlendario(_splitTitle)
+      // let año = _splitTitle[1]
+      // console.log(_splitTitle)
+      // console.log(mes)
+      // console.log(año)
+      // this.getEventos(mes + 1, año)
       
-    },
+    },     
     prev(){
       console.log('Anterior')
-      this.$refs.calendar.prev()
-      console.log(this.$refs)
+      this.$refs.calendar.prev()      
+      // let _splitTitle = this.$refs.calendar.title.split(' ')
+      // let mes = this.fehcaMEsCAlendario(_splitTitle)
+      // let año = _splitTitle[1]
+      //     console.log(mes)
+      // console.log(año)
+      // this.getEventos(mes, año)
     },
+     fehcaMEsCAlendario(_array){
+
+        let mes = _array[0].toUpperCase()
+
+        if(mes == "ENERO"){
+            return 1
+        }
+        if(mes == "FEBRERO"){
+            return 2
+        }
+         if(mes == "MARZO"){
+          return 3
+        }
+         if(mes == "ABRIL"){
+          return 4
+        }
+         if(mes == "MAYO"){
+          return 5
+        }
+         if(mes == "JUNIO"){
+          return 6
+        }
+         if(mes == "JULIO"){
+          return 7
+        }
+         if(mes == "AGOSTO"){
+          return 8
+        }
+         if(mes == "SEPTIEMBRE"){
+          return 9
+        }
+         if(mes == "OCTUBRE"){
+          return 10
+        }
+         if(mes == "NOVIEMBRE"){
+          return 11
+        }
+         if(mes == "DICIEMBRE"){
+           
+           return 12
+        }
+    },  
+         fehcaMEsCAlendarioInverso(mes){
+
+        
+
+        if(mes ==  1){
+            return "ENERO"
+        }
+        if(mes == 2){
+            return "FEBRERO"
+        }
+         if(mes == 3){
+          return "MARZO"
+        }
+         if(mes == 4){
+          return "ABRIL"
+        }
+         if(mes == 5){
+          return "MAYO"
+        }
+         if(mes == 6){
+          return "JUNIO"
+        }
+         if(mes == 7){
+          return "JULIO"
+        }
+         if(mes == 8){
+          return "AGOSTO"
+        }
+         if(mes == 9){
+          return "SEPTIEMBRE"
+        }
+         if(mes == 10){
+          return "OCTUBRE"
+        }
+         if(mes == 11){
+          return "NOVIEMBRE"
+        }
+         if(mes == 12){           
+           return "DICIEMBRE"
+        }
+    },  
     getEventos(mes, año) {
       
       console.log('aqui espiezo')
@@ -112,6 +208,17 @@ console.log(this.$refs)
         month: mes,
         year: año,
       };
+
+       Axios.post(`${PATH_RUTA}/Calendario/getComentario`, item)
+          .then((response) => {
+            if(response.status == 200)
+            this.comentario = response.data.result.table[0].comment
+            
+          })
+          .catch((ex) => {
+            this.comentario = ""
+            console.log(ex);
+          });
 
       Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear`, item)
         .then((response) => {
@@ -157,6 +264,40 @@ console.log(this.$refs)
           console.log("cath");
           console.log(ex);
         });
+
+    },
+    getPDF(mes, año){
+
+      if (mes === undefined || año === undefined) {        
+        let fecha = new Date();
+        mes = fecha.getMonth() + 1;
+        año = fecha.getFullYear();
+      }
+      const idPlaza = this.plaza.slice(0, 3);
+      const idUser = this.USER[0].userId; 
+     
+      
+        var oReq = new XMLHttpRequest();
+            // The Endpoint of your server
+            let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${mes}/${año}/${idUser}/${idPlaza}`;
+            let namePdf = `REPORTE-${this.fehcaMEsCAlendarioInverso(mes)}.pdf`;
+            // Configure XMLHttpRequest
+            oReq.open("GET", urlTopdf, true);
+            // Important to use the blob response type
+            oReq.responseType = "blob";
+            // When the file request finishes
+            // Is up to you, the configuration for error events etc.
+            oReq.onload = function () {
+              // Once the file is downloaded, open a new window with the PDF
+              // Remember to allow the POP-UPS in your browser
+              var file = new Blob([oReq.response], {
+                type: "application/pdf",
+              });
+              // Generate file download directly in the browser !
+              saveAs(file, namePdf);
+            };
+
+            oReq.send();
     },
     getEvents({ start, end }) {
       console.log(start);
@@ -437,7 +578,10 @@ console.log(this.$refs)
           ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn @click="guardarInfo" outlined color="primary"
+           <v-btn @click="guardarInfo" outlined color="primary" class="ma-2"
+            >Guardar Cambios</v-btn
+          >
+          <v-btn @click="getPDF(undefined, undefined)" outlined color="red" class="ma-2"
             >Imprimir Reporte</v-btn
           >
         </v-sheet>
