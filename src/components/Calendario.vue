@@ -50,6 +50,11 @@ export default {
         text: item.squareName,
       }));
     },
+    titulo() {
+  
+      var f = new Date();
+      return `${fechaService.numero_to_nombre(f.getMonth() + 1)} ${f.getFullYear()}`;
+    },
   },
   //   carriles() {
   //     // let _carriles_prohibidos = [];
