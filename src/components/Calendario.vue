@@ -161,9 +161,11 @@ export default {
       }
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
+      const referenceSquare = this.USER[0].referenceSquare
 
       var oReq = new XMLHttpRequest();
-      let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${mes}/${año}/${idUser}/${idPlaza}`;
+      let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${referenceSquare}/${mes}/${año}/${idUser}/${idPlaza}`;
+      
       let namePdf = `REPORTE-${fechaService.numero_to_nombre(mes)}.pdf`;
       // Configure XMLHttpRequest
       oReq.open("GET", urlTopdf, true);
@@ -362,19 +364,25 @@ export default {
           text: item.lane,
         }));
       } else if (this.actividadSelect > 1) {
-        const _rolUser = this.USER[0].rollId
+        let _rolUser = this.USER[0].rollId
+        console.log(_rolUser)
         let _carriles_prohibidos = [];
         for (let evento of this.events) {
           if (evento.name != "Semanal") {
-            for (let carril of evento.carriles) {                       
-                if(_rolUser === 1){
+            for (let carril of evento.carriles) {                                                     
+                if(_rolUser == 1){
                   _carriles_prohibidos.push(carril);
                 }
-                if(_rolUser === 2){                  
-                  if(carril.lane =! 'Plaza'){
-                      _carriles_prohibidos.push(carril)
-                  }
-                }                                                  
+                else{
+                  if(carril.lane != 'Plaza'){
+                    _carriles_prohibidos.push(carril);
+                  }                                  
+                }                                
+                // if(_rolUser === 2){                  
+                //   if(carril.lane =! 'Plaza'){
+                //       _carriles_prohibidos.push(carril)
+                //   }
+                // }                                                  
             }
           }
         }
