@@ -55,67 +55,8 @@ export default {
       return `${fechaService.numero_to_nombre(
         f.getMonth() + 1
       )} ${f.getFullYear()}`;
-    },
+    }
   },
-  //   carriles() {
-  //     // let _carriles_prohibidos = [];
-  //     // for (let evento of this.events) {
-  //     //   if (evento.name != "Semanal") {
-  //     //     for (let carril of evento.carriles) {
-  //     //       _carriles_prohibidos.push(carril);
-  //     //     }
-  //     //   }
-  //     // }
-  //     // let _carriles = [];
-  //     // for (let carrilesFull of this.CARRILES) {
-  //     //   let map = _carriles_prohibidos.findIndex(
-  //     //     (item) =>
-  //     //       item.capufeLaneNum == carrilesFull.capufeLaneNum &&
-  //     //       item.idGare == carrilesFull.idGare
-  //     //   );
-  //     //   if (map == -1) {
-  //     //     _carriles.push({
-  //     //       value: {
-  //     //         capufeLaneNum: carrilesFull.capufeLaneNum,
-  //     //         idGare: carrilesFull.idGare,
-  //     //         lane: carrilesFull.lane,
-  //     //       },
-  //     //       text: carrilesFull.lane,
-  //     //     });
-  //     //   }
-  //     //   // console.log(map)
-  //     //   // for (let carrilProhibido of _carriles_prohibidos) {
-  //     //   //   let valida = carrilesFull.capufeLaneNum == carrilProhibido.capufeLaneNum && carrilesFull.idGare == carrilProhibido.idGare
-  //     //   //   if (!valida){
-  //     //   //     _carriles.push({
-  //     //   //       value: {
-  //     //   //         capufeLaneNum: carrilesFull.capufeLaneNum,
-  //     //   //         idGare: carrilesFull.idGare,
-  //     //   //         lane: carrilesFull.lane,
-  //     //   //       },
-  //     //   //       text: carrilesFull.lane,
-  //     //   //     });
-  //     //   //   }
-  //     //   // }
-  //     // }
-  //     // console.log(_carriles.length);
-
-  //     return this.CARRILES.map((item) => ({
-  //       value: {
-  //         capufeLaneNum: item.capufeLaneNum,
-  //         idGare: item.idGare,
-  //         lane: item.lane,
-  //       },
-  //       text: item.lane,
-  //     }));
-  //   },
-  //   titulo() {
-  //     var f = new Date();
-  //     return `${fechaService.numero_to_nombre(
-  //       f.getMonth()
-  //     )} ${f.getFullYear()}`;
-  //   },
-  // },
   ////////////////////////////////////////////////////
   //                 METODOS                        //
   ////////////////////////////////////////////////////
@@ -421,11 +362,19 @@ export default {
           text: item.lane,
         }));
       } else if (this.actividadSelect > 1) {
+        const _rolUser = this.USER[0].rollId
         let _carriles_prohibidos = [];
         for (let evento of this.events) {
           if (evento.name != "Semanal") {
-            for (let carril of evento.carriles) {
-              _carriles_prohibidos.push(carril);
+            for (let carril of evento.carriles) {                       
+                if(_rolUser === 1){
+                  _carriles_prohibidos.push(carril);
+                }
+                if(_rolUser === 2){                  
+                  if(carril.lane =! 'Plaza'){
+                      _carriles_prohibidos.push(carril)
+                  }
+                }                                                  
             }
           }
         }
