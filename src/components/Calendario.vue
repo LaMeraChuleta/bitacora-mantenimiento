@@ -51,9 +51,10 @@ export default {
       }));
     },
     titulo() {
-  
       var f = new Date();
-      return `${fechaService.numero_to_nombre(f.getMonth() + 1)} ${f.getFullYear()}`;
+      return `${fechaService.numero_to_nombre(
+        f.getMonth() + 1
+      )} ${f.getFullYear()}`;
     },
   },
   //   carriles() {
@@ -161,13 +162,21 @@ export default {
           if (response.status === 200) {
             var i = 1;
             let _eventos = [];
+            console.log(response.data.result);
             while (i < 31) {
-              let query = response.data.result.filter((item) => item.day == i);
-              if (query.length > 0) {
-                _eventos.push(query);
+               let query = response.data.result.filter(
+                  (item) => item.day == i
+                );
+              for (let actividad of this.tipoActividad) {               
+                let _itemFilter = query.filter(itemfilter => itemfilter.frequencyId == actividad.value)
+
+                if (_itemFilter.length > 0) {
+                  _eventos.push(_itemFilter);
+                }
               }
               i++;
             }
+            console.log(_eventos);
             for (let item of _eventos) {
               let carriles = [];
               for (let item2 of item) {
