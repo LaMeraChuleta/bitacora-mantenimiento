@@ -374,7 +374,7 @@ export default {
                   _carriles_prohibidos.push(carril);
                 }
                 else{
-                  if(carril.lane != 'Plaza'){
+                  if(carril.lane != 'Plaza' && carril.lane != 'Plaza-M'){
                     _carriles_prohibidos.push(carril);
                   }                                  
                 }                                
