@@ -240,7 +240,7 @@ export default {
     },
     eliminarActividad() {
       let index = this.events.findIndex(
-        (item) => item.start == this.selectedEvent.start
+        (item) => item.start == this.selectedEvent.start && item.name == this.selectedEvent.name
       );
       this.events.splice(index, 1);
       this.selectedEvent = {};
