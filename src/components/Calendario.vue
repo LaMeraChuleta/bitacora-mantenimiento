@@ -4,8 +4,8 @@ import Axios from "axios";
 import fechaService from "../service/fechaService.js";
 import saveAs from "file-saver";
 
-const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-//const PATH_RUTA = "https://localhost:44358/api"
+//const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: () => ({
     plaza: "",
@@ -30,6 +30,7 @@ export default {
     value: "",
     carrilesDisable: true,
     INSERT_UPDATE: true,
+    insertarEventosValidacionBoton: false 
   }),
   ////////////////////////////////////////////////////
   //                 CICLO DE VIDA                  //
@@ -87,7 +88,7 @@ export default {
         year: año,
       };
 
-      Axios.post(`${PATH_RUTA}/Calendario/getComentario`, item)
+      Axios.post(`${PATH_RUTA}/Calendario/getComentario/CALENDARIO`, item)
         .then((response) => {
           if (response.status == 200)
             this.comentario = response.data.result.table[0].comment;
@@ -97,7 +98,7 @@ export default {
           console.log(ex);
         });
 
-      Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear`, item)
+      Axios.post(`${PATH_RUTA}/Calendario/ActividadMesYear/CALENDARIO`, item)
         .then((response) => {
           this.INSERT_UPDATE = response.data.result.length == 0 ? true : false;
           if (response.status === 200) {
@@ -271,8 +272,19 @@ export default {
       return obj;
     },
     async guardarInfo() {
+      this.insertarEventosValidacionBoton = true
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
+            
+        await Axios.delete(`${PATH_RUTA}/Calendario/DeleteCalendar/CALENDARIO/${this.events[0].month}/${this.events[0].year}/${idUser}/${idPlaza}`)
+          .then((response) => {
+            
+            console.log(response);
+          })
+          .catch((ex) => {
+            console.log("cath");
+            console.log(ex);
+          });
 
       let map = this.events.map((item) => {
         let obj = {};
@@ -317,9 +329,7 @@ export default {
       let _activitiComent = {};
 
       for (let item of map) {
-        let full_path = this.INSERT_UPDATE
-          ? "Calendario/Actividad"
-          : "Calendario/Actualizar";
+        let full_path = "Calendario/Actividad/CALENDARIO"          
         await Axios.post(`${PATH_RUTA}/${full_path}`, item)
           .then((response) => {
             _activitiComent = item;
@@ -331,11 +341,13 @@ export default {
           });
       }
       await Axios.post(
-        `${PATH_RUTA}/Calendario/ObservacionesInsert`,
+        `${PATH_RUTA}/Calendario/ObservacionesInsert/CALENDARIO`,
         _activitiComent
       )
         .then((response) => {
           console.log(response);
+          this.insertarEventosValidacionBoton = false
+          alert('SE INSERTARON LAS ACTIVIDADES Y EL CALENDARIO')
         })
         .catch((ex) => {
           console.log("cath");
@@ -374,15 +386,10 @@ export default {
                   _carriles_prohibidos.push(carril);
                 }
                 else{
-                  if(carril.lane != 'Plaza'){
+                  if(carril.lane != 'Plaza' && carril.lane != "Plaza-M"){
                     _carriles_prohibidos.push(carril);
                   }                                  
                 }                                
-                // if(_rolUser === 2){                  
-                //   if(carril.lane =! 'Plaza'){
-                //       _carriles_prohibidos.push(carril)
-                //   }
-                // }                                                  
             }
           }
         }
@@ -521,7 +528,7 @@ export default {
           ></v-textarea>
         </v-sheet>
         <v-sheet class="mt-2 mb-10">
-          <v-btn @click="guardarInfo" outlined color="primary" class="ma-2"
+          <v-btn @click="guardarInfo" outlined color="primary" class="ma-2" :disabled="insertarEventosValidacionBotonlisto"
             >Guardar Cambios</v-btn
           >
           <v-btn @click="getPDF()" outlined color="red" class="ma-2"
