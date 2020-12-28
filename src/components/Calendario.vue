@@ -4,8 +4,8 @@ import Axios from "axios";
 import fechaService from "../service/fechaService.js";
 import saveAs from "file-saver";
 
-//const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-const PATH_RUTA = "https://localhost:44358/api"
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+//const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: () => ({
     plaza: "",
@@ -165,8 +165,7 @@ export default {
       const referenceSquare = this.USER[0].referenceSquare
 
       var oReq = new XMLHttpRequest();
-      let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${referenceSquare}/${mes}/${año}/${idUser}/${idPlaza}`;
-      
+      let urlTopdf = `${PATH_RUTA}/Calendario/Mantenimiento/${referenceSquare}/${mes}/${año}/${idUser}/${idPlaza}`;      
       let namePdf = `REPORTE-${fechaService.numero_to_nombre(mes)}.pdf`;
       // Configure XMLHttpRequest
       oReq.open("GET", urlTopdf, true);
@@ -245,8 +244,9 @@ export default {
       );
       this.events.splice(index, 1);
       this.selectedEvent = {};
-      this.guardarInfo();
+      //this.guardarInfo();
       this.selectedOpen = false;
+      alert('borrado evento')
     },
     codigoColores(_idSemanal) {
       let obj = {};
@@ -275,10 +275,24 @@ export default {
       this.insertarEventosValidacionBoton = true
       const idPlaza = this.plaza.slice(0, 3);
       const idUser = this.USER[0].userId;
-            
-        await Axios.delete(`${PATH_RUTA}/Calendario/DeleteCalendar/CALENDARIO/${this.events[0].month}/${this.events[0].year}/${idUser}/${idPlaza}`)
-          .then((response) => {
-            
+      console.log(this.value)
+      let mes_comodin = ""
+      let año_comodin = ""
+      if(this.value == ""){
+        let _date = new Date()
+        mes_comodin = _date.getMonth() + 1
+        año_comodin =  _date.getFullYear()
+      }
+      else{
+        let fecha_comodin = this.value.split('-')
+        año_comodin = fecha_comodin[0]
+        mes_comodin = fecha_comodin[1]
+      }            
+      let _ruta_eliminar_pdf = this.events.length == 0 
+      ? `${PATH_RUTA}/Calendario/DeleteCalendar/CALENDARIO/${mes_comodin}/${año_comodin}/${idUser}/${idPlaza}`
+      : `${PATH_RUTA}/Calendario/DeleteCalendar/CALENDARIO/${this.events[0].month}/${this.events[0].year}/${idUser}/${idPlaza}`            
+        await Axios.delete(_ruta_eliminar_pdf)
+          .then((response) => {            
             console.log(response);
           })
           .catch((ex) => {
@@ -301,7 +315,7 @@ export default {
           (obj["month"] = item.month),
           (obj["year"] = item.year),
           (obj["FinalFlag"] = false),
-          (obj["comment"] = this.comentario);
+          (obj["comment"] = this.comentario === null ? "" : this.comentario);
         return obj;
       });
 
@@ -321,14 +335,31 @@ export default {
           (obj["month"] = item2.month),
           (obj["year"] = item2.year),
           (obj["FinalFlag"] = false),
-          (obj["comment"] = this.comentario);
+          (obj["comment"] = this.comentario === null ? "" : this.comentario);
 
         map_nuevo.push(obj);
       }
-
-      let _activitiComent = {};
-
-      for (let item of map) {
+      console.log(map)
+            
+      let _activitiComent = {}
+      if(map.length == 0){   
+        let obj = {};       
+        obj["frequencyId"] = 0,
+        obj["capufeLaneNums"] = [],
+        obj["idGares"] = [],
+        obj["squareId"] = "",
+        obj["userId"] = 0,
+        obj["day"] = 0,
+        obj["month"] = 0,
+        obj["year"] = 0,
+        obj["FinalFlag"] = false,
+        obj["comment"] = "";
+        _activitiComent = obj
+        this.comentario = ""
+      }
+      else{
+        _activitiComent  = { ...map};
+        for (let item of map) {
         let full_path = "Calendario/Actividad/CALENDARIO"          
         await Axios.post(`${PATH_RUTA}/${full_path}`, item)
           .then((response) => {
@@ -340,12 +371,14 @@ export default {
             console.log(ex);
           });
       }
+       
+      }
+       console.log(_activitiComent)     
       await Axios.post(
         `${PATH_RUTA}/Calendario/ObservacionesInsert/CALENDARIO`,
         _activitiComent
       )
-        .then((response) => {
-          console.log(response);
+        .then(() => {          
           this.insertarEventosValidacionBoton = false
           alert('SE INSERTARON LAS ACTIVIDADES Y EL CALENDARIO')
         })

@@ -1,7 +1,7 @@
 <script>
 import Axios from "axios";
-//const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
-const PATH_RUTA = "https://localhost:44358/api"
+const PATH_RUTA = "http://prosisdev.sytes.net:88/api";
+//const PATH_RUTA = "https://localhost:44358/api"
 export default {
   data: function () {
     return {
